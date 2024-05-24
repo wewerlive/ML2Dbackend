@@ -88,7 +88,8 @@ if torch.cuda.is_available():
         if 'pId' in request.json:
             product = client.test.products.find_one({"product_id":request.json['pId']})
             print(product)
-            tryImg = predictTryOn(product["product_id"],product['product_link'],request.json['personImg'])
+            category = {"top":0,"bottom":1}
+            tryImg = predictTryOn(category[product["product_type"]],product['product_link'],request.json['personImg'])
             return {"tryOn":tryImg}
         else:
             return "No ProductID given"
