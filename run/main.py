@@ -3,12 +3,16 @@ from pymongo import MongoClient
 import json
 from bson import json_util
 from flask_cors import CORS
+import torch
 
-
-from predictFunction import predictTryOn
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
 
 app = Flask(__name__)
 CORS(app)
+
+if torch.cuda.is_available():
+    from predictFunction import predictTryOn
 
 # from gradio_client import Client, file
 
@@ -60,24 +64,25 @@ def product_info():
     print(pList)
     return {"products": pList}
 
-@app.post("/tryon")
-def tryon():    
-    print(request.json)
-    # print(request.json['topId'])
-    # print(request.json['bottomId'])
-    # print(request.json['dressId'])
-    if 'topId' in request.json:
-        top = client.test.products.find_one({"product_id": request.json['topId']})
-    else:
-        top = None
-    if 'bottomId' in request.json:
-        bottom = client.test.products.find_one({"product_id": request.json['bottomId']})
-    else:
-        bottom = None
-    if bottom == None and top == None:
-        return {"error": "No top or bottom found"}
-    personImg = request.json['personImg']
-    if bottom != None:
-        bottomLink = bottom['product_link']
-        print(predictTryOn(1, bottomLink, personImg))
-    return "<p>Tryon</p>"
+if torch.cuda.is_available():
+    @app.post("/tryon")
+    def tryon():    
+        print(request.json)
+        # print(request.json['topId'])
+        # print(request.json['bottomId'])
+        # print(request.json['dressId'])
+        if 'topId' in request.json:
+            top = client.test.products.find_one({"product_id": request.json['topId']})
+        else:
+            top = None
+        if 'bottomId' in request.json:
+            bottom = client.test.products.find_one({"product_id": request.json['bottomId']})
+        else:
+            bottom = None
+        if bottom == None and top == None:
+            return {"error": "No top or bottom found"}
+        personImg = request.json['personImg']
+        if bottom != None:
+            bottomLink = bottom['product_link']
+            tryImg = predictTryOn(1, bottomLink, personImg)
+        return {"tryOn":tryImg}

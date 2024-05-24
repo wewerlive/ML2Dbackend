@@ -4,6 +4,7 @@ from PIL import Image
 from utils_ootd import get_mask_location
 import base64
 from io import BytesIO
+import requests
 
 PROJECT_ROOT = Path(__file__).absolute().parents[1].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -35,7 +36,7 @@ model = OOTDiffusionDC(0)
 # model_path = args.model_path
 
 def predictTryOn(category, cloth_path, model_64):
-    cloth_img = Image.open(cloth_path).resize((768, 1024))
+    cloth_img = Image.open(BytesIO(requests.get(cloth_path).content)).resize((768, 1024))
     # model_img = Image.open(model_path).resize((768, 1024))
     
     person_bytes = base64.b64decode(model_64)
@@ -63,7 +64,13 @@ def predictTryOn(category, cloth_path, model_64):
         image_scale=image_scale,
         seed=seed,
     )
-    return images[0]
+    tryImg = images[0]
+    imFile = BytesIO()
+    tryImg.save(imFile,format="JPEG")
+    im_bytes = imFile.getvalue()
+    im_64 = base64.b64encode(im_bytes)
+
+    return im_64
 
 
 
