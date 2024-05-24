@@ -41,7 +41,7 @@ def predictTryOn(category, cloth_path, model_64):
     
     person_bytes = base64.b64decode(model_64)
     person_file = BytesIO(person_bytes)
-    model_img = Image.open(person_file)
+    model_img = Image.open(person_file).resize((768, 1024))
 
     keypoints = openpose_model(model_img.resize((384, 512)))
     model_parse, _ = parsing_model(model_img.resize((384, 512)))
