@@ -71,18 +71,25 @@ if torch.cuda.is_available():
         # print(request.json['topId'])
         # print(request.json['bottomId'])
         # print(request.json['dressId'])
-        if 'topId' in request.json:
-            top = client.test.products.find_one({"product_id": request.json['topId']})
+        # if 'topId' in request.json:
+        #     top = client.test.products.find_one({"product_id": request.json['topId']})
+        # else:
+        #     top = None
+        # if 'bottomId' in request.json:
+        #     bottom = client.test.products.find_one({"product_id": request.json['bottomId']})
+        # else:
+        #     bottom = None
+        # if bottom == None and top == None:
+        #     return {"error": "No top or bottom found"}
+        # personImg = request.json['personImg']
+        # if bottom != None:
+        #     bottomLink = bottom['product_link']
+        #     tryImg = predictTryOn(1, bottomLink, personImg)
+        if 'pId' in request.json:
+            product = client.test.products.find_one({"product_id":request.json['pId']})
+            print(product)
+            tryImg = predictTryOn(product["product_id"],product['product_link'],request.json['personImg'])
+            return {"tryOn":tryImg}
         else:
-            top = None
-        if 'bottomId' in request.json:
-            bottom = client.test.products.find_one({"product_id": request.json['bottomId']})
-        else:
-            bottom = None
-        if bottom == None and top == None:
-            return {"error": "No top or bottom found"}
-        personImg = request.json['personImg']
-        if bottom != None:
-            bottomLink = bottom['product_link']
-            tryImg = predictTryOn(1, bottomLink, personImg)
-        return {"tryOn":tryImg}
+            return "No ProductID given"
+        

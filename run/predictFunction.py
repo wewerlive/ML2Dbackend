@@ -70,7 +70,7 @@ def predictTryOn(category, cloth_path, model_64):
     im_bytes = imFile.getvalue()
     im_64 = base64.b64encode(im_bytes)
 
-    return im_64
+    return str(im_64)
 
 
 

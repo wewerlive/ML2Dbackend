@@ -8,3 +8,8 @@ im_bytes = base64.b64decode(img)   # im_bytes is a binary image
 im_file = BytesIO(im_bytes)  # convert image to file-like object
 img = Image.open(im_file)
 img.show()
+imFile = BytesIO()
+img.save(imFile,format="JPEG")
+im_bytes = imFile.getvalue()
+im_64 = base64.b64encode(im_bytes)
+print(str(im_64)) 
