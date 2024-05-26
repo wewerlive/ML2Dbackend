@@ -4,11 +4,13 @@ import json
 from bson import json_util
 from flask_cors import CORS
 import torch
+import os
 
 if torch.cuda.is_available():
     torch.cuda.empty_cache()
 
 app = Flask(__name__)
+
 CORS(app)
 
 if torch.cuda.is_available():
