@@ -5,6 +5,7 @@ from utils_ootd import get_mask_location
 import base64
 from io import BytesIO
 import requests
+import random
 
 PROJECT_ROOT = Path(__file__).absolute().parents[1].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -29,13 +30,14 @@ n_steps = 20
 n_samples = 4
 seed = 1
 
-model = OOTDiffusionDC(0)
+# model = OOTDiffusionDC(0)
 
 # category = args.category # 0:upperbody; 1:lowerbody; 2:dress
 # cloth_path = args.cloth_path
 # model_path = args.model_path
 
-def predictTryOn(category, cloth_path, model_64):
+def predictTryOn(category, cloth_path, model_64,mlModel):
+    model = mlModel
     cloth_img = Image.open(BytesIO(requests.get(cloth_path).content)).resize((768, 1024))
     # model_img = Image.open(model_path).resize((768, 1024))
     
@@ -65,6 +67,7 @@ def predictTryOn(category, cloth_path, model_64):
         seed=seed,
     )
     tryImg = images[0]
+    # tryImg.save('./images_output/'+random.random()*10000+'AICNALANDA.jpg')
     imFile = BytesIO()
     tryImg.save(imFile,format="JPEG")
     im_bytes = imFile.getvalue()

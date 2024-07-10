@@ -1,15 +1,16 @@
-from flask import Flask, request
-from flask_socketio import SocketIO, emit
+
 from pymongo import MongoClient
 import json
 from bson import json_util
-from flask_cors import CORS
 import torch
 import os
+from fastapi import FastAPI, Request
 
-from pathlib import Path
+app = FastAPI()
+
+
+from pathlib import Path  
 import sys
-
 PROJECT_ROOT = Path(__file__).absolute().parents[1].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -19,10 +20,8 @@ from ootd.inference_ootd_dc import OOTDiffusionDC
 if torch.cuda.is_available():
     torch.cuda.empty_cache()
 
-app = Flask(__name__)
 
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+
 model = None
 if torch.cuda.is_available():
     from predictFunction import predictTryOn
@@ -50,12 +49,12 @@ client = MongoClient(mongo_url)
 print(client.test.products)
 # print(client['firstCluster'])
 
-@app.route("/")
+@app.get("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 
 @app.get("/products")
-def products():
+def products(request: Request):
     products = client.test.products.find({})
     # print(list(products))
     # pList = list(products)
@@ -65,8 +64,8 @@ def products():
     return {"products": pList}
 
 @app.post("/productInfo")
-def product_info():
-    print(request.json)
+async  def product_info(request: Request):
+    request.json = await request.json()
     products = []
     for i in request.json['products']:
         p = client.test.products.find_one({"product_id": i})
@@ -79,8 +78,9 @@ def product_info():
 
 if torch.cuda.is_available():
     @app.post("/tryon")
-    def tryon():    
-        print(request.json)
+    async def tryon(request: Request):  
+        request.json = await request.json()
+        # print(request.json)
         # print(request.json['topId'])
         # print(request.json['bottomId'])
         # print(request.json['dressId'])
@@ -108,24 +108,24 @@ if torch.cuda.is_available():
             return "No ProductID given"
         
 
-@socketio.on('connect')
-def test_connect():
-    print('Client connected')
+# @socketio.on('connect')
+# def test_connect():
+#     print('Client connected')
 
-@socketio.on('tryon')
-def asynctryon(data):
-    print(data)
-    print("Tryon")
-    if 'pId' in data:
-        product = client.test.products.find_one({"product_id":data['pId']})
-        print(product)
-        category = {"top":0,"bottom":1}
-        tryImg = predictTryOn(category[product["product_type"]],product['product_link'],data['personImg'],model)
-        emit('tryonResult', {'tryOn':tryImg})
-        # return {"tryOn":tryImg}
-    # else:
-    #     return "No ProductID given"
-    # socketio.emit('tryon', "Tryon")
+# @socketio.on('tryon')
+# def asynctryon(data):
+#     print(data)
+#     print("Tryon")
+#     if 'pId' in data:
+#         product = client.test.products.find_one({"product_id":data['pId']})
+#         print(product)
+#         category = {"top":0,"bottom":1}
+#         tryImg = predictTryOn(category[product["product_type"]],product['product_link'],data['personImg'],model)
+#         emit('tryonResult', {'tryOn':tryImg})
+#         # return {"tryOn":tryImg}
+#     # else:
+#     #     return "No ProductID given"
+#     # socketio.emit('tryon', "Tryon")
 
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0')   
+# if __name__ == '__main__':
+#     socketio.run(app, host='0.0.0.0')   
